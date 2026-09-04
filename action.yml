@@ -61,6 +61,10 @@ runs:
   using: 'composite'
   steps:
     - name: Install GitHub CLI
+      # macOS self-hosted (MarieBot-Fork): apt-get existiert nicht und sudo
+      # braucht ein Passwort — gh ist dort via Homebrew vorinstalliert.
+      # Upstream-Verhalten auf Linux unveraendert.
+      if: runner.os == 'Linux'
       shell: bash
       run: |
         echo "::group::Install gh CLI"
@@ -170,7 +174,10 @@ runs:
           pip install -r "$ACTION_PATH/claudecode/requirements.txt"
           npm install -g @anthropic-ai/claude-code
         fi
-        sudo apt-get update && sudo apt-get install -y jq
+        # jq: apt-get ist Linux-only; macOS self-hosted bringt jq mit (/usr/bin/jq).
+        if [ "$RUNNER_OS" == "Linux" ]; then
+          sudo apt-get update && sudo apt-get install -y jq
+        fi
         echo "::endgroup::"
     
     - name: Run ClaudeCode scan
