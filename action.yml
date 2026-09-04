@@ -94,8 +94,9 @@ runs:
         fi
         echo "$PYBIN" >> "$GITHUB_PATH"
         echo "Using $PYBIN"
-        python --version
-        pip --version
+        # GITHUB_PATH wirkt erst im Folgeschritt — hier direkt mit Pfad:
+        "$PYBIN/python" --version
+        "$PYBIN/pip" --version
         echo "::endgroup::"
     
     - name: Check ClaudeCode run history
