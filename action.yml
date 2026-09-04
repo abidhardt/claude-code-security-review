@@ -86,17 +86,21 @@ runs:
       if: runner.os == 'macOS'
       shell: bash
       run: |
-        echo "::group::Setup Python (Homebrew)"
+        echo "::group::Setup Python (Homebrew + venv)"
         PYBIN=$(ls -d /opt/homebrew/opt/python@3.*/libexec/bin 2>/dev/null | sort -V | tail -1)
         if [ -z "$PYBIN" ]; then
           echo "Kein Homebrew-Python gefunden" >&2
           exit 1
         fi
-        echo "$PYBIN" >> "$GITHUB_PATH"
         echo "Using $PYBIN"
-        # GITHUB_PATH wirkt erst im Folgeschritt — hier direkt mit Pfad:
-        "$PYBIN/python" --version
-        "$PYBIN/pip" --version
+        # PEP 668: Homebrew-Python ist externally managed — pip nur im venv.
+        VENV="$RUNNER_TEMP/ccsr-venv"
+        "$PYBIN/python" -m venv "$VENV"
+        echo "$VENV/bin" >> "$GITHUB_PATH"
+        # GITHUB_PATH wirkt erst im Folgeschritt — Check direkt via Pfad:
+        "$VENV/bin/python" --version
+        "$VENV/bin/pip" --version
+        echo "::endgroup::"
         echo "::endgroup::"
     
     - name: Check ClaudeCode run history
